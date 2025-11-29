@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Тест: баланс мужчины к 40</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Chart.js для колеса баланса -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #050816;
+      --card-bg: #0f172a;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.15);
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --danger: #f97373;
+      --radius-lg: 18px;
+      --radius-xl: 22px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      padding: 16px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #0f172a 0, #020617 50%, #020617 100%);
+      color: var(--text);
+    }
+
+    .app {
+      max-width: 720px;
+      margin: 0 auto 32px;
+    }
+
+    .card {
+      background: linear-gradient(145deg, var(--card-bg), #020617);
+      border-radius: var(--radius-xl);
+      padding: 18px 16px;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      backdrop-filter: blur(16px);
+    }
+
+    h1 {
+      font-size: 22px;
+      margin: 0 0 6px;
+      letter-spacing: 0.02em;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(15, 118, 110, 0.15);
+      color: #a5f3fc;
+      font-size: 11px;
+      margin-bottom: 8px;
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.7);
+    }
+
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .progress-bar {
+      position: relative;
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      overflow: hidden;
+      margin-top: 6px;
+    }
+
+    .progress-bar-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #38bdf8, #22c55e);
+      width: 0%;
+      transition: width 0.35s ease-out;
+    }
+
+    .block-title {
+      font-size: 17px;
+      margin-bottom: 4px;
+    }
+
+    .block-caption {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .question {
+      background: rgba(15, 23, 42, 0.8);
+      border-radius: var(--radius-lg);
+      padding: 10px 10px 8px;
+      margin-bottom: 8px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+    }
+
+    .question-text {
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .scale {
+      display: flex;
+      justify-content: space-between;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .scale-label {
+      font-size: 10px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .scale-options {
+      display: grid;
+      grid-auto-flow: column;
+      gap: 4px;
+      justify-content: end;
+    }
+
+    .scale-option input {
+      display: none;
+    }
+
+    .scale-option label {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      min-width: 30px;
+      padding: 4px 0;
+      font-size: 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      color: var(--muted);
+      background: rgba(15, 23, 42, 0.8);
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.18s ease-out;
+    }
+
+    .scale-option input:checked + label {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: #e0f2fe;
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.3);
+    }
+
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: none;
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.9);
+      transition: transform 0.12s ease-out, box-shadow 0.12s ease-out,
+        background 0.15s ease-out, opacity 0.2s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #38bdf8, #22c55e);
+      color: #0b1120;
+      box-shadow: 0 16px 40px rgba(56, 189, 248, 0.35);
+    }
+
+    .btn:active {
+      transform: translateY(1px) scale(0.99);
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.9);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: default;
+      box-shadow: none;
+    }
+
+    .btn-secondary {
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    .btn span.icon {
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    .error {
+      color: var(--danger);
+      font-size: 11px;
+      margin-top: 4px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Results */
+
+    .results-card {
+      margin-top: 16px;
+    }
+
+    .chart-container {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: var(--radius-xl);
+      background: radial-gradient(circle at top, rgba(56, 189, 248, 0.2), transparent 60%);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+
+    #balanceChart {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .scores-grid {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+      gap: 8px;
+    }
+
+    .score-item {
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: var(--radius-lg);
+      padding: 9px 10px;
+      font-size: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+    }
+
+    .score-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+      gap: 6px;
+    }
+
+    .score-label {
+      font-weight: 500;
+      font-size: 12px;
+    }
+
+    .score-value {
+      font-size: 12px;
+      color: #e0f2fe;
+    }
+
+    .score-tag {
+      display: inline-flex;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      margin-top: 2px;
+    }
+
+    .tag-ok {
+      background: rgba(22, 163, 74, 0.2);
+      color: #bbf7d0;
+    }
+
+    .tag-warn {
+      background: rgba(234, 179, 8, 0.18);
+      color: #facc15;
+    }
+
+    .tag-risk {
+      background: rgba(248, 113, 113, 0.18);
+      color: #fecaca;
+    }
+
+    .profile-block {
+      margin-top: 14px;
+      padding: 10px 11px;
+      border-radius: var(--radius-lg);
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      font-size: 13px;
+    }
+
+    .profile-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .profile-tagline {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .profile-list {
+      margin: 6px 0 4px;
+      padding-left: 18px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .cta {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid rgba(148, 163, 184, 0.25);
+      padding-top: 8px;
+    }
+
+    @media (min-width: 768px) {
+      body {
+        padding: 24px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .card {
+        padding: 20px 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="card" id="testCard">
+    <div class="badge">
+      <span class="badge-dot"></span>
+      Диагностика для мужчин 35–45
+    </div>
+    <h1>Тест: баланс мужчины к 40</h1>
+    <p class="subtitle">
+      Ответьте честно по шкале от 0 до 3. В конце вы увидите колесо баланса по 6 ключевым сферам жизни и краткие рекомендации.
+    </p>
+
+    <div class="step-indicator">
+      <span id="stepLabel">Блок 1 из 6</span>
+      <div style="flex:1; margin-left:8px;">
+        <div class="progress-bar">
+          <div class="progress-bar-fill" id="progressFill"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Здесь будет подставляться активный блок -->
+    <div id="questionsContainer"></div>
+
+    <div id="validationError" class="error hidden">
+      Ответьте на все вопросы в этом блоке, чтобы продолжить.
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" id="prevBtn">
+        <span class="icon">←</span><span>Назад</span>
+      </button>
+      <button class="btn btn-primary" id="nextBtn">
+        <span id="nextBtnText">Дальше</span>
+        <span class="icon">→</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Результаты -->
+  <div class="card results-card hidden" id="resultsCard">
+    <h2 style="font-size:18px; margin:0 0 4px;">Ваше колесо баланса</h2>
+    <p class="subtitle" id="resultsSubtitle">
+      Ниже — распределение напряжения по жизненным сферам. 0–4 — относительно стабильно, 5–8 — зона напряжения, 9+ — зона риска.
+    </p>
+
+    <div class="chart-container">
+      <canvas id="balanceChart"></canvas>
+    </div>
+
+    <div class="scores-grid" id="scoresGrid"></div>
+
+    <div class="profile-block" id="profileBlock">
+      <div class="profile-title" id="profileTitle"></div>
+      <div class="profile-tagline" id="profileTagline"></div>
+      <ul class="profile-list" id="profileList"></ul>
+      <div class="cta">
+        Это базовая диагностика. По ней уже видно, куда сейчас уходит больше всего энергии и с чего логичнее начинать изменения.
+      </div>
+    </div>
+
+    <div class="nav-buttons" style="margin-top:14px;">
+      <button class="btn btn-secondary" id="restartBtn">
+        Пройти ещё раз
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Поддержка Telegram WebApp (чтобы не ломаться в обычном браузере)
+  let tg = null;
+  if (window.Telegram && window.Telegram.WebApp) {
+    tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+  }
+
+  const blocks = [
+    {
+      id: "psychology",
+      title: "Психология и самоощущение",
+      caption: "Внутреннее состояние, смысл, уверенность.",
+      questions: [
+        "Часто думаю, что живу «не свою жизнь».",
+        "Накрывают периоды пустоты или потери смысла.",
+        "Сравниваю себя с другими и чувствую недостаточность.",
+        "Легко раздражаюсь, стал вспыльчивее.",
+        "Хочу всё начать с нуля — работа, место, окружение."
+      ]
+    },
+    {
+      id: "career",
+      title: "Карьера и деньги",
+      caption: "Работа, доход, удовлетворённость результатами.",
+      questions: [
+        "Работа перестала приносить удовольствие.",
+        "Есть ощущение потолка в развитии.",
+        "Тревожит финансовое будущее.",
+        "Возникают мысли резко поменять сферу/город/формат.",
+        "Стал быстрее уставать, сложнее собраться."
+      ]
+    },
+    {
+      id: "relations",
+      title: "Отношения и семья",
+      caption: "Близость, поддержка, ощущение союза.",
+      questions: [
+        "Чувствую эмоциональное отдаление от партнёрши.",
+        "Отношения больше похожи на рутину, чем на союз.",
+        "Кажется, что меня не понимают или не ценят.",
+        "Хочу больше тишины, личного пространства.",
+        "Появляются сомнения в правильности выбора партнёра."
+      ]
+    },
+    {
+      id: "sex",
+      title: "Секс и интимность",
+      caption: "Либидо, драйв, уверенность в себе.",
+      questions: [
+        "Либидо стало ниже, чем раньше.",
+        "В сексе меньше драйва и новизны.",
+        "Появилась неуверенность в теле или в себе.",
+        "Есть избегание близости или зависимости (например, порно).",
+        "Хочется подтверждения собственной привлекательности."
+      ]
+    },
+    {
+      id: "health",
+      title: "Здоровье и физическое состояние",
+      caption: "Энергия, самочувствие, тело.",
+      questions: [
+        "Стал уставать без явной причины.",
+        "Сон ухудшился, просыпаюсь чаще.",
+        "Появились боли (спина/суставы/ЖКТ/давление).",
+        "Вес и форма требуют всё больше усилий.",
+        "Всё чаще думаю о здоровье, анализах, гормонах."
+      ]
+    },
+    {
+      id: "social",
+      title: "Социальная сфера",
+      caption: "Друзья, окружение, чувство принадлежности.",
+      questions: [
+        "Друзей стало значительно меньше.",
+        "Не хватает настоящего мужского общения.",
+        "Возникает чувство одиночества даже среди людей.",
+        "Устал от поверхностных разговоров.",
+        "Хочу больше уединения."
+      ]
+    }
+  ];
+
+  let currentBlockIndex = 0;
+  const answers = {}; // {blockId: {qIndex: value}}
+
+  const questionsContainer = document.getElementById("questionsContainer");
+  const stepLabel = document.getElementById("stepLabel");
+  const progressFill = document.getElementById("progressFill");
+  const validationError = document.getElementById("validationError");
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const nextBtnText = document.getElementById("nextBtnText");
+  const testCard = document.getElementById("testCard");
+  const resultsCard = document.getElementById("resultsCard");
+  const restartBtn = document.getElementById("restartBtn");
+
+  let chartInstance = null;
+
+  function renderCurrentBlock() {
+    const block = blocks[currentBlockIndex];
+    stepLabel.textContent = `Блок ${currentBlockIndex + 1} из ${blocks.length}`;
+    const progress = ((currentBlockIndex) / blocks.length) * 100;
+    progressFill.style.width = `${progress}%`;
+
+    questionsContainer.innerHTML = `
+      <div class="block-title">${block.title}</div>
+      <div class="block-caption">${block.caption}</div>
+    `;
+
+    const saved = answers[block.id] || {};
+
+    block.questions.forEach((q, idx) => {
+      const qId = `${block.id}-${idx}`;
+      const savedVal = saved[idx] != null ? saved[idx] : null;
+
+      const questionEl = document.createElement("div");
+      questionEl.className = "question";
+      questionEl.innerHTML = `
+        <div class="question-text">${q}</div>
+        <div class="scale">
+          <div class="scale-label">0 — не про меня</div>
+          <div class="scale-options">
+            ${[0,1,2,3].map(val => `
+              <div class="scale-option">
+                <input 
+                  type="radio" 
+                  name="${qId}" 
+                  id="${qId}-${val}" 
+                  value="${val}" 
+                  ${savedVal === val ? "checked" : ""}
+                />
+                <label for="${qId}-${val}">${val}</label>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      `;
+      questionsContainer.appendChild(questionEl);
+    });
+
+    // Кнопки
+    prevBtn.disabled = currentBlockIndex === 0;
+    if (currentBlockIndex === blocks.length - 1) {
+      nextBtnText.textContent = "Показать результаты";
+    } else {
+      nextBtnText.textContent = "Дальше";
+    }
+    validationError.classList.add("hidden");
+  }
+
+  function collectCurrentBlockAnswers() {
+    const block = blocks[currentBlockIndex];
+    const blockAnswers = {};
+    let allAnswered = true;
+
+    block.questions.forEach((q, idx) => {
+      const name = `${block.id}-${idx}`;
+      const checked = document.querySelector(`input[name="${name}"]:checked`);
+      if (!checked) {
+        allAnswered = false;
+      } else {
+        blockAnswers[idx] = Number(checked.value);
+      }
+    });
+
+    if (!allAnswered) {
+      return null;
+    }
+
+    answers[block.id] = blockAnswers;
+    return blockAnswers;
+  }
+
+  function computeScores() {
+    const result = {};
+    blocks.forEach(block => {
+      const blockAns = answers[block.id] || {};
+      const sum = Object.values(blockAns).reduce((acc, v) => acc + v, 0);
+      result[block.id] = sum;
+    });
+    return result;
+  }
+
+  function getZoneTag(score) {
+    if (score <= 4) {
+      return { label: "Относительно стабильно", className: "tag-ok" };
+    } else if (score <= 8) {
+      return { label: "Зона напряжения", className: "tag-warn" };
+    } else if (score <= 12) {
+      return { label: "Зона риска", className: "tag-risk" };
+    } else {
+      return { label: "Критическая зона", className: "tag-risk" };
+    }
+  }
+
+  function detectProfile(scores) {
+    const s = scores;
+
+    const high = (key) => s[key] >= 9;
+    const mid = (key) => s[key] >= 5 && s[key] <= 8;
+    const highCount = Object.values(s).filter(v => v >= 9).length;
+
+    // 6. Кризисный беглец
+    if (highCount >= 3) {
+      return {
+        title: "Профиль: «Кризисный беглец»",
+        tagline: "Сразу несколько сфер находятся в высокой напряжённости.",
+        bullets: [
+          "важно расставить приоритеты и не пытаться решить всё одновременно;",
+          "стартовать с 1–2 сфер, которые сильнее всего «тянут вниз»;",
+          "подключить поддержку: специалист, окружение, режим, здоровье;",
+          "избегать импульсивных решений: резкие разводы, увольнения, переезды."
+        ]
+      };
+    }
+
+    // 1. Уставший рационал: здоровье + карьера
+    if (high("health") && high("career")) {
+      return {
+        title: "Профиль: «Уставший рационал»",
+        tagline: "Основное напряжение — в здоровье и работе.",
+        bullets: [
+          "пересмотреть режим сна, нагрузки, питание, минимум 2–3 недели подряд;",
+          "по возможности делегировать, упростить или временно снизить рабочую нагрузку;",
+          "ввести регулярную физическую активность и медицинскую диагностику;",
+          "честно ответить себе: что я делаю только ради денег и статуса, а что действительно важно."
+        ]
+      };
+    }
+
+    // 2. Эмоционально потерянный: психология + отношения
+    if (high("psychology") && (high("relations") || mid("relations"))) {
+      return {
+        title: "Профиль: «Эмоционально потерянный»",
+        tagline: "Много внутренней турбулентности и вопросов к себе и отношениям.",
+        bullets: [
+          "дать себе пространство на честные вопросы: чего я хочу, чего мне не хватает;",
+          "начать «выгружать» мысли: дневник, разговор с близким человеком или специалистом;",
+          "понемногу возвращать то, что даёт ощущение живости (хобби, люди, интерес);",
+          "в отношениях переходить от обвинений к формату «я-чувствую / мне важно / я нуждаюсь»."
+        ]
+      };
+    }
+
+    // 3. Разочарованный партнёр: отношения + секс
+    if (high("relations") && (high("sex") || mid("sex"))) {
+      return {
+        title: "Профиль: «Разочарованный партнёр»",
+        tagline: "Сильное напряжение в сфере близости и взаимопонимания.",
+        bullets: [
+          "разделить разговор: сначала про чувства и ожидания, потом про секс;",
+          "перейти от претензий к обсуждению того, что каждый готов делать для улучшения;",
+          "искать новизну не только в сексе, но и в совместном времяпрепровождении;",
+          "поработать с самооценкой и телесностью, а не только ждать инициативы от партнёра."
+        ]
+      };
+    }
+
+    // 4. Одиночка на автомате: психология + социалка
+    if (high("psychology") && (high("social") || mid("social"))) {
+      return {
+        title: "Профиль: «Одиночка на автомате»",
+        tagline: "Много внутреннего напряжения и мало поддерживающего окружения.",
+        bullets: [
+          "точечно искать людей «по интересу», а не просто расширять круг общения;",
+          "сократить время с токсичными или обесценивающими контактами;",
+          "постепенно выходить из режима «сам справлюсь» — просить о помощи в мелочах;",
+          "ввести регулярные живые встречи, а не только онлайн-общение."
+        ]
+      };
+    }
+
+    // 5. Человек на пороге перемен: карьера + смысл (здесь берём карьеру и психологию)
+    if (high("career") && (high("psychology") || mid("psychology"))) {
+      return {
+        title: "Профиль: «На пороге перемен»",
+        tagline: "Внутренний запрос на смену траектории, особенно в работе.",
+        bullets: [
+          "сделать ревизию: что в текущей деятельности ещё живое, а что точно «отмерло»;",
+          "прописать 2–3 возможных сценария движения дальше, а не фиксироваться на одном;",
+          "начать тестировать новые варианты в маленьком масштабе (проект, подработка, обучение);",
+          "рассматривать перемены как процесс в 6–18 месяцев, а не как один резкий шаг."
+        ]
+      };
+    }
+
+    // Базовый профиль, если ничего ярко не выделяется
+    return {
+      title: "Профиль: «Точка переоценки»",
+      tagline: "Есть зоны напряжения, но критического перекоса пока нет.",
+      bullets: [
+        "выбрать одну сферу с наибольшим баллом и сфокусироваться на ней первые 4 недели;",
+        "раз в месяц пересматривать своё «колесо баланса» и отмечать динамику;",
+        "отдельно заботиться о базовых вещах: сон, питание, движение, честный отдых;",
+        "не ждать, пока всё «само рассосётся» — маленькие шаги сейчас дешевле, чем большой кризис потом."
+      ]
+    };
+  }
+
+  function renderResults() {
+    const scores = computeScores();
+
+    testCard.classList.add("hidden");
+    resultsCard.classList.remove("hidden");
+
+    // Рисуем карту баланса (radar chart)
+    const ctx = document.getElementById("balanceChart");
+    const labels = blocks.map(b => b.title);
+    const data = blocks.map(b => scores[b.id] || 0);
+
+    if (chartInstance) {
+      chartInstance.destroy();
+    }
+
+    chartInstance = new Chart(ctx, {
+      type: "radar",
+      data: {
+        labels,
+        datasets: [{
+          label: "Уровень напряжения (0–15)",
+          data,
+          borderWidth: 2,
+          pointRadius: 3,
+          pointHoverRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          r: {
+            suggestedMin: 0,
+            suggestedMax: 15,
+            ticks: {
+              stepSize: 3,
+              backdropColor: "transparent"
+            },
+            angleLines: {
+              display: true
+            },
+            grid: {
+              circular: true
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      }
+    });
+
+    // Таблица по сферам
+    const scoresGrid = document.getElementById("scoresGrid");
+    scoresGrid.innerHTML = "";
+    blocks.forEach(block => {
+      const score = scores[block.id] || 0;
+      const tag = getZoneTag(score);
+
+      const item = document.createElement("div");
+      item.className = "score-item";
+      item.innerHTML = `
+        <div class="score-item-header">
+          <div class="score-label">${block.title}</div>
+          <div class="score-value">${score} / 15</div>
+        </div>
+        <div class="score-tag ${tag.className}">
+          ${tag.label}
+        </div>
+      `;
+      scoresGrid.appendChild(item);
+    });
+
+    // Профиль и рекомендации
+    const profile = detectProfile(scores);
+    document.getElementById("profileTitle").textContent = profile.title;
+    document.getElementById("profileTagline").textContent = profile.tagline;
+
+    const profileList = document.getElementById("profileList");
+    profileList.innerHTML = "";
+    profile.bullets.forEach(text => {
+      const li = document.createElement("li");
+      li.textContent = text;
+      profileList.appendChild(li);
+    });
+
+    // Опционально — отправка данных в Telegram-бота
+    if (tg) {
+      // Можно отправить краткое резюме в бот при показе результатов:
+      const payload = {
+        scores,
+        profileTitle: profile.title
+      };
+      // tg.sendData(JSON.stringify(payload)); // раскомментировать, если нужно
+    }
+  }
+
+  // Навигация
+  nextBtn.addEventListener("click", () => {
+    const collected = collectCurrentBlockAnswers();
+    if (!collected) {
+      validationError.classList.remove("hidden");
+      return;
+    }
+    validationError.classList.add("hidden");
+
+    if (currentBlockIndex === blocks.length - 1) {
+      renderResults();
+    } else {
+      currentBlockIndex++;
+      renderCurrentBlock();
+    }
+  });
+
+  prevBtn.addEventListener("click", () => {
+    if (currentBlockIndex === 0) return;
+    currentBlockIndex--;
+    renderCurrentBlock();
+  });
+
+  restartBtn.addEventListener("click", () => {
+    currentBlockIndex = 0;
+    for (const key in answers) delete answers[key];
+    resultsCard.classList.add("hidden");
+    testCard.classList.remove("hidden");
+    renderCurrentBlock();
+
+    if (chartInstance) {
+      chartInstance.destroy();
+      chartInstance = null;
+    }
+  });
+
+  // Инициализация
+  renderCurrentBlock();
+</script>
+</body>
+</html>
